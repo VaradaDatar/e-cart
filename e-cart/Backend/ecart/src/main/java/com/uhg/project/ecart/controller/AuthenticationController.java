@@ -18,6 +18,7 @@ import com.uhg.project.ecart.dto.AuthenticationDTO;
 import com.uhg.project.ecart.dto.AuthenticationResponse;
 import com.uhg.project.ecart.exception.UserNotFoundException;
 import com.uhg.project.ecart.jwt.UserDetailsServiceImp;
+import com.uhg.project.ecart.service.EmailService;
 //import com.uhg.project.ecart.service.AuthService;
 import com.uhg.project.ecart.util.JWTUtil;
 
@@ -32,6 +33,10 @@ public class AuthenticationController {
 	private AuthenticationManager authenticationManager;
 	@Autowired
 	private UserDetailsServiceImp userDetailsService;
+	
+	@Autowired
+	private EmailService emailService;
+  
 	
 	@PostMapping("/authenticate")
 	public AuthenticationResponse createAuthenticationToken(@RequestBody AuthenticationDTO authenticationDTO, HttpServletResponse response) throws BadCredentialsException, DisabledException,UsernameNotFoundException, IOException{
