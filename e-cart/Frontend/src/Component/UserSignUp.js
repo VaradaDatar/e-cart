@@ -1,29 +1,87 @@
 import * as React from "react";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
-import Link from "@mui/material/Link";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
+import {
+  Avatar,
+  Button,
+  Grid,
+  CssBaseline,
+  TextField,
+  Link,
+  Box,
+  Modal,
+  Divider,
+  Stack,
+} from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import * as actionType from "../store/actions";
+import { connect } from "react-redux";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
-export default function Login() {
+const modalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  height: 150,
+  bgcolor: "background.paper",
+  boxShadow: 24,
+  outline: "none",
+};
+
+function UserSignUp(props) {
+  const { actions, successMsg, errorMsg } = props;
+  const [openModal, setOpenModal] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      name: data.get("firstName", "lastName"),
+    const userData = {
       email: data.get("email"),
-      phone: data.get("phoneNumber"),
+      firstName: data.get("firstName"),
+      lastName: data.get("lastName"),
+      number: data.get("phoneNumber"),
       password: data.get("password"),
-    });
+      role: "user",
+    };
+    if (
+      !userData.email ||
+      !userData.firstName ||
+      !userData.lastName ||
+      !userData.number ||
+      !userData.password
+    ) {
+      console.log("Please enter all required Fields.");
+      setError("Please enter all required Fields.");
+    } else {
+      setError(null);
+      actions.createUser({ data: userData });
+    }
   };
 
+  useEffect(() => {
+    // console.log("Successmsg is", successMsg);
+    // console.log("errorMsg is", errorMsg);
+    if (successMsg || errorMsg || error) {
+      setOpenModal(true);
+    }
+  }, [successMsg, errorMsg, error]);
+
+  const handleClose = () => {
+    setOpenModal(false);
+    if (successMsg) {
+      navigate("/login");
+    }
+    actions.resetData();
+    setError(null);
+  };
   return (
     <ThemeProvider theme={theme}>
       <Grid container component="main" sx={{ height: "100vh" }}>
@@ -160,7 +218,7 @@ export default function Login() {
                   fontSize: "14px",
                 }}
               >
-                Login
+                Sign Up
               </Button>
               <Grid container>
                 <Grid item xs></Grid>
@@ -174,6 +232,45 @@ export default function Login() {
           </Box>
         </Grid>
       </Grid>
+      <Modal open={openModal} onClose={handleClose}>
+        <Box sx={modalStyle} p={2}>
+          <Stack direction="row" justifyContent="end">
+            <Button>
+              <CloseOutlinedIcon sx={{ color: "red" }} onClick={handleClose} />
+            </Button>
+          </Stack>
+          <Divider sx={{ backgroundColor: "blue" }} />
+          {successMsg ? (
+            <Typography p={2} sx={{ color: "green" }}>
+              {successMsg}
+            </Typography>
+          ) : (
+            <Typography p={2} sx={{ color: "red" }}>
+              {error ? error : errorMsg}
+            </Typography>
+          )}
+        </Box>
+      </Modal>
     </ThemeProvider>
   );
 }
+
+const mapStateToProps = ({ userReducer }) => {
+  return {
+    successMsg: userReducer.successMsg,
+    errorMsg: userReducer.errorMsg,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  actions: {
+    createUser: (payload) => {
+      dispatch(actionType.createUser(payload));
+    },
+    resetData: () => {
+      dispatch(actionType.resetData());
+    },
+  },
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(UserSignUp);

@@ -6,22 +6,54 @@ import TextField from "@mui/material/TextField";
 import Link from "@mui/material/Link";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
+import Modal from "@mui/material/Modal";
+import Stack from "@mui/material/Stack";
+import Divider from "@mui/material/Divider";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { connect } from "react-redux";
+import * as actionType from "../store/actions";
+import { useState } from "react";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import { useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
-export default function AdminSignUp() {
+const modalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  height: 150,
+  bgcolor: "background.paper",
+  boxShadow: 24,
+  outline: "none",
+};
+
+function AdminSignUp(props) {
+  const { actions } = props;
+  const navigate = useNavigate();
+  const [openModal, setOpenModal] = useState(true);
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      name: data.get("firstName", "lastName"),
+    const adminData = {
       email: data.get("email"),
-      phone: data.get("phoneNumber"),
+      firstName: data.get("firstName"),
+      lastName: data.get("lastName"),
+      number: data.get("phoneNumber"),
       password: data.get("password"),
-    });
+      role: "admin",
+    };
+    actions.createAdmin({ data: adminData });
+    setOpenModal(true);
+  };
+
+  const handleClose = () => {
+    setOpenModal(false);
+    navigate("/")
   };
 
   return (
@@ -173,6 +205,26 @@ export default function AdminSignUp() {
           </Box>
         </Grid>
       </Grid>
+
+      <Modal open={openModal} onClose={handleClose}>
+        <Box sx={modalStyle} p={2}>
+          <Stack direction="row" justifyContent="end">
+            <Button ><CloseOutlinedIcon sx={{ color: "red" }} onClick={handleClose}/></Button>
+          </Stack>
+          <Divider sx={{ backgroundColor: "blue" }}/>
+          <Typography pt={2}  sx={{ color: "green" }}>You have Successfully Registered.</Typography>
+        </Box>
+      </Modal>
     </ThemeProvider>
   );
 }
+
+const mapDispatchToProps = (dispatch) => ({
+  actions: {
+    createAdmin: (payload) => {
+      dispatch(actionType.createUser(payload));
+    },
+  },
+});
+
+export default connect(null, mapDispatchToProps)(AdminSignUp);

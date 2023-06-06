@@ -94,7 +94,7 @@ export default function LandingPage() {
               mr: "10px",
             }}
           >
-            <Button
+            {/* <Button
               variant="contained"
               sx={{ mt: 3, mb: 2, mr: 2 }}
               style={{
@@ -110,7 +110,7 @@ export default function LandingPage() {
               to="/signup/admin"
             >
               Admin's Sign Up
-            </Button>
+            </Button> */}
             <Button
               variant="contained"
               sx={{ mt: 3, mb: 2, mr: 2 }}
@@ -133,7 +133,7 @@ export default function LandingPage() {
               sx={{ mt: 3, mb: 2, mr: 2 }}
               style={{
                 borderRadius: 15,
-                backgroundColor: "#8400be",
+                backgroundColor: "#c62624",
                 padding: "8px 16px",
                 fontSize: "14px",
                 color: "#ffffff",

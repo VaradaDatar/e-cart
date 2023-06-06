@@ -1,25 +1,75 @@
 import * as React from "react";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
-import Link from "@mui/material/Link";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
+import {
+  Avatar,
+  Button,
+  CssBaseline,
+  TextField,
+  Link,
+  Box,
+  Grid,
+  Modal,
+  Stack,
+  Divider,
+  Typography,
+} from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import * as actionType from "../store/actions";
+import { connect } from "react-redux";
+import { useEffect, useState } from "react";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import { useNavigate } from "react-router-dom";
+import excludeVariablesFromRoot from "@mui/material/styles/excludeVariablesFromRoot";
 
 const theme = createTheme();
 
-export default function Login() {
+const modalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  height: 150,
+  bgcolor: "background.paper",
+  boxShadow: 24,
+  outline: "none",
+};
+
+function Login(props) {
+  const { actions, jwtToken, loginError } = props;
+  const [openModal, setOpenModal] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
+    const userData = {
       email: data.get("email"),
       password: data.get("password"),
-    });
+    };
+    if (!userData.email || !userData.password) {
+      setError("Please Enter required Fields.");
+    } else {
+      actions.authenticate({ userData });
+    }
+  };
+
+  useEffect(() => {
+    // console.log("JWT Token is", jwtToken);
+    // console.log("Login ERROR is", loginError);
+    if (jwtToken) {
+      console.log("Login Successful...");
+      navigate("/product");
+    }
+    if (loginError || error) {
+      setOpenModal(true);
+    }
+  }, [loginError, jwtToken,error]);
+
+  const handleClose = () => {
+    setOpenModal(false);
+    actions.resetData();
+    setError(null);
   };
 
   return (
@@ -32,8 +82,7 @@ export default function Login() {
           sm={4}
           md={7}
           sx={{
-            backgroundImage:
-              "url(https://img.freepik.com/free-photo/3d-illustration-computer-monitor-login-screen_107791-16390.jpg?size=626&ext=jpg&ga=GA1.1.2000971037.1685621599&semt=ais)",
+            backgroundImage:"url(https://img.freepik.com/free-photo/sign-user-password-privacy-concept_53876-121137.jpg?w=826&t=st=1686033048~exp=1686033648~hmac=7e99a5d2dc4473756ac61017375c97ac1d10c79ed5f7ebae31d263b3770058e1)",
             backgroundRepeat: "no-repeat",
             backgroundSize: "80%",
             backgroundPosition: "center",
@@ -51,7 +100,7 @@ export default function Login() {
               marginRight: "140px",
             }}
           >
-            <Avatar sx={{ m: 1, bgcolor: "#8400be" }}>
+            <Avatar sx={{ m: 1, bgcolor: "#99635C" }}>
               <LockOutlinedIcon />
             </Avatar>
             <Typography component="h1" variant="h4">
@@ -99,18 +148,18 @@ export default function Login() {
                     fullWidth
                     color="secondary"
                     variant="contained"
-                    sx={{ mt: 3, mb: 2 }}
+                    sx={{ mt: 3, mb: 2, ml: 13 }}
                     style={{
                       borderRadius: 15,
-                      backgroundColor: "#8400be",
+                      backgroundColor: "#99635C",
                       padding: "14px 15px",
                       fontSize: "14px",
                     }}
                   >
-                    Login as User
+                    Login
                   </Button>
                 </Grid>
-                <Grid item xs={6}>
+                {/* <Grid item xs={6}>
                   <Button
                     type="submit"
                     fullWidth
@@ -126,7 +175,7 @@ export default function Login() {
                   >
                     Login as Admin
                   </Button>
-                </Grid>
+                </Grid> */}
               </Grid>
               <Grid container>
                 <Grid item xs>
@@ -144,6 +193,40 @@ export default function Login() {
           </Box>
         </Grid>
       </Grid>
+
+      <Modal open={openModal} onClose={handleClose}>
+        <Box sx={modalStyle} p={2}>
+          <Stack direction="row" justifyContent="end">
+            <Button>
+              <CloseOutlinedIcon sx={{ color: "red" }} onClick={handleClose} />
+            </Button>
+          </Stack>
+          <Divider sx={{ backgroundColor: "blue" }} />
+          <Typography p={2} sx={{ color: "red" }}>
+            {error ? error : loginError}
+          </Typography>
+        </Box>
+      </Modal>
     </ThemeProvider>
   );
 }
+
+const mapStateToProps = ({ userReducer }) => {
+  return {
+    jwtToken: userReducer.jwtToken,
+    loginError: userReducer.loginError,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  actions: {
+    authenticate: (payload) => {
+      dispatch(actionType.authenticate(payload));
+    },
+    resetData: () => {
+      dispatch(actionType.resetData());
+    },
+  },
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login);
